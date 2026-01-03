@@ -1,0 +1,30 @@
+assets:
+  - id: obj_cigarette
+    name: Lit Cigarette
+    tags: [prop, atmospheric]
+    metadata:
+      symbolism: time, mortality
+
+  - id: obj_briefcase
+    name: Leather Briefcase
+    tags: [prop, macguffin]
+    metadata:
+      symbolism: secrets, value
+
+  - id: obj_gun
+    name: Revolver
+    tags: [prop, weapon, danger]
+    metadata:
+      symbolism: power, violence
+
+  - id: obj_photo
+    name: Faded Photograph
+    tags: [prop, clue]
+    metadata:
+      symbolism: memory, loss
+
+  - id: obj_fedora
+    name: Worn Fedora
+    tags: [prop, costume]
+    metadata:
+      symbolism: identity, profession

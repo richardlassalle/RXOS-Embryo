@@ -1,0 +1,28 @@
+assets:
+  - id: loc_alley
+    name: Dark Alley
+    tags: [urban, night, dangerous]
+    metadata:
+      mood: tense
+      lighting: low-key
+
+  - id: loc_cafe
+    name: Neon Cafe
+    tags: [urban, night, social]
+    metadata:
+      mood: mysterious
+      lighting: neon-glow
+
+  - id: loc_office
+    name: Private Office
+    tags: [indoor, professional, private]
+    metadata:
+      mood: contemplative
+      lighting: venetian-blinds
+
+  - id: loc_docks
+    name: Foggy Docks
+    tags: [urban, night, abandoned]
+    metadata:
+      mood: ominous
+      lighting: fog-diffused

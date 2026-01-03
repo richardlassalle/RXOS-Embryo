@@ -1,0 +1,21 @@
+assets:
+  - id: chr_detective
+    name: Detective Noir
+    tags: [protagonist, mysterious, serious]
+    metadata:
+      description: A world-weary detective with a keen eye
+      archetype: hero
+
+  - id: chr_femme_fatale
+    name: Mysterious Woman
+    tags: [supporting, mysterious, dangerous]
+    metadata:
+      description: A woman with secrets and hidden motives
+      archetype: trickster
+
+  - id: chr_villain
+    name: The Mastermind
+    tags: [antagonist, intelligent, threatening]
+    metadata:
+      description: The one behind it all
+      archetype: shadow
