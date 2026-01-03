@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Lineage - Embryonic Story System{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Evolution Timeline</h2>
+        {% if timeline %}
+        <div class="timeline">
+            {% for entry in timeline %}
+            <div class="timeline-item">
+                <div class="timeline-gen">Generation {{ entry.generation }}</div>
+                <div class="timeline-score">{{ "%.1f"|format(entry.overall_score * 100) }}%</div>
+                {% if entry.performance %}
+                <div style="font-size: 12px; color: var(--text-dim); margin-top: 5px;">
+                    Eng: {{ "%.0f"|format(entry.performance.engagement_score * 100) }}% |
+                    Coh: {{ "%.0f"|format(entry.performance.narrative_coherence * 100) }}% |
+                    Qual: {{ "%.0f"|format(entry.performance.visual_quality * 100) }}% |
+                    Time: {{ "%.0f"|format(entry.performance.timing_effectiveness * 100) }}%
+                </div>
+                {% endif %}
+                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px;">
+                    {{ entry.cell_count }} cells
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No Evolution History</h3>
+            <p>Generate stories and provide feedback to build evolution history.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Performance Over Time</h2>
+        {% if chart_data.generations %}
+        <div class="chart-container" id="scoreChart"></div>
+        {% else %}
+        <div class="empty-state">
+            <p>No data to display yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Parameter Evolution</h2>
+    {% if chart_data.generations %}
+    <div class="grid grid-3">
+        <div>
+            <h3 style="font-size: 12px; color: var(--setup); margin-bottom: 10px;">SETUP INTENSITY</h3>
+            <div class="chart-container" id="setupChart"></div>
+        </div>
+        <div>
+            <h3 style="font-size: 12px; color: var(--conflict); margin-bottom: 10px;">CONFLICT INTENSITY</h3>
+            <div class="chart-container" id="conflictChart"></div>
+        </div>
+        <div>
+            <h3 style="font-size: 12px; color: var(--resolution); margin-bottom: 10px;">RESOLUTION INTENSITY</h3>
+            <div class="chart-container" id="resolutionChart"></div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Parameter evolution will appear here after multiple generations.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if status %}
+<div class="card">
+    <h2>Current Successful Ranges</h2>
+    <p style="color: var(--text-dim); margin-bottom: 15px;">
+        These ranges represent parameter values that have historically performed well.
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Range</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for param, range in status.successful_ranges.items() %}
+            <tr>
+                <td>{{ param }}</td>
+                <td>{{ "%.3f"|format(range[0]) }}</td>
+                <td>{{ "%.3f"|format(range[1]) }}</td>
+                <td>
+                    <div class="bar-container">
+                        <div class="bar" style="position: relative;">
+                            <div style="position: absolute; left: {{ range[0] * 100 }}%; right: {{ (1 - range[1]) * 100 }}%; height: 100%; background: var(--accent); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simple bar chart rendering
+    const chartData = {{ chart_data | tojson }};
+
+    function drawBarChart(containerId, data, color) {
+        const container = document.getElementById(containerId);
+        if (!container || !data || data.length === 0) return;
+
+        const max = Math.max(...data, 1);
+        const html = data.map((val, i) => {
+            const height = (val / max) * 100;
+            return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <div style="flex: 1; width: 100%; display: flex; align-items: flex-end;">
+                    <div style="width: 100%; height: ${height}%; background: ${color}; border-radius: 2px; min-height: 2px;"></div>
+                </div>
+                <div style="font-size: 10px; color: var(--text-dim);">${i + 1}</div>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `<div style="display: flex; gap: 5px; height: 100%; padding: 10px 0;">${html}</div>`;
+    }
+
+    if (chartData.generations && chartData.generations.length > 0) {
+        drawBarChart('scoreChart', chartData.scores, '#4ade80');
+        drawBarChart('setupChart', chartData.setup_intensity, '#60a5fa');
+        drawBarChart('conflictChart', chartData.conflict_intensity, '#f87171');
+        drawBarChart('resolutionChart', chartData.resolution_intensity, '#4ade80');
+    }
+</script>
+{% endblock %}

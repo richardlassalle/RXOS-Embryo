@@ -37,6 +37,22 @@ pip install -r requirements.txt
 ./embryo status
 ```
 
+## Web Interface
+
+Run the web dashboard for a visual interface:
+
+```bash
+python3 web/app.py
+```
+
+Open http://localhost:5000 in your browser.
+
+**Features:**
+- **Dashboard** - View current embryo status and learned parameters
+- **Generate** - Create stories with duration and subject inputs
+- **Feedback** - Rate content with visual sliders
+- **Lineage** - View evolution timeline and parameter history
+
 ## CLI Commands
 
 | Command | Description |
@@ -115,6 +131,11 @@ embryonic/
 ├── storage.py   # SQLite persistence layer
 ├── assets.py    # Asset library management
 └── cli.py       # Command-line interface
+
+web/
+├── app.py       # Flask web application
+├── templates/   # HTML templates (Jinja2)
+└── static/      # CSS styles
 ```
 
 ### Core Classes

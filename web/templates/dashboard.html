@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Embryonic Story System{% endblock %}
+
+{% block content %}
+{% if not status %}
+<div class="card">
+    <div class="empty-state">
+        <h3>No Embryo Initialized</h3>
+        <p>Create your first embryo to get started</p>
+        <form action="{{ url_for('init_embryo') }}" method="post" style="max-width: 300px; margin: 20px auto;">
+            <div class="form-group">
+                <label for="name">Embryo Name</label>
+                <input type="text" id="name" name="name" value="project_v1" required>
+            </div>
+            <button type="submit">Create Embryo</button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Current Embryo</h2>
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="label">Name</div>
+                <div class="value" style="font-size: 16px;">{{ status.embryo.name }}</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Generation</div>
+                <div class="value">{{ status.embryo.generation }}</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Offspring</div>
+                <div class="value">{{ status.embryo.offspring_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Last Performance</h2>
+        {% if status.last_performance %}
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="label">Engagement</div>
+                <div class="value">{{ "%.0f"|format(status.last_performance.engagement_score * 100) }}%</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Coherence</div>
+                <div class="value">{{ "%.0f"|format(status.last_performance.narrative_coherence * 100) }}%</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Quality</div>
+                <div class="value">{{ "%.0f"|format(status.last_performance.visual_quality * 100) }}%</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No feedback yet. Generate a story and provide feedback.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Learned Parameters</h2>
+    <div class="param-row">
+        <span class="param-name arc-setup">SETUP</span>
+        <div class="param-values">
+            <span>Int: <strong>{{ "%.2f"|format(status.learned_parameters.setup.intensity) }}</strong></span>
+            <span>Temp: <strong>{{ "%.2f"|format(status.learned_parameters.setup.temperature) }}</strong></span>
+            <span>Duration: <strong>{{ "%.0f"|format(status.learned_parameters.setup.duration_ratio * 100) }}%</strong></span>
+        </div>
+        <div class="bar-container" style="width: 200px;">
+            <div class="bar">
+                <div class="bar-fill setup" style="width: {{ status.learned_parameters.setup.intensity * 100 }}%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="param-row">
+        <span class="param-name arc-conflict">CONFLICT</span>
+        <div class="param-values">
+            <span>Int: <strong>{{ "%.2f"|format(status.learned_parameters.conflict.intensity) }}</strong></span>
+            <span>Temp: <strong>{{ "%.2f"|format(status.learned_parameters.conflict.temperature) }}</strong></span>
+            <span>Duration: <strong>{{ "%.0f"|format(status.learned_parameters.conflict.duration_ratio * 100) }}%</strong></span>
+        </div>
+        <div class="bar-container" style="width: 200px;">
+            <div class="bar">
+                <div class="bar-fill conflict" style="width: {{ status.learned_parameters.conflict.intensity * 100 }}%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="param-row">
+        <span class="param-name arc-resolution">RESOLUTION</span>
+        <div class="param-values">
+            <span>Int: <strong>{{ "%.2f"|format(status.learned_parameters.resolution.intensity) }}</strong></span>
+            <span>Temp: <strong>{{ "%.2f"|format(status.learned_parameters.resolution.temperature) }}</strong></span>
+            <span>Duration: <strong>{{ "%.0f"|format(status.learned_parameters.resolution.duration_ratio * 100) }}%</strong></span>
+        </div>
+        <div class="bar-container" style="width: 200px;">
+            <div class="bar">
+                <div class="bar-fill resolution" style="width: {{ status.learned_parameters.resolution.intensity * 100 }}%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Embryos</h2>
+        {% if embryos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Generation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in embryos %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('select_embryo', name=e.name) }}">{{ e.name }}</a>
+                    </td>
+                    <td>{{ e.generation }}</td>
+                    <td>{% if e.is_current %}<span style="color: var(--success);">Active</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-dim);">No embryos created yet.</p>
+        {% endif %}
+
+        <form action="{{ url_for('init_embryo') }}" method="post" style="margin-top: 15px;">
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="text" name="name" placeholder="New embryo name" required>
+                </div>
+                <button type="submit" class="secondary">+ New</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Recent Stories</h2>
+        {% if stories %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Duration</th>
+                    <th>Cells</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in stories %}
+                <tr>
+                    <td>{{ s.subject or '(untitled)' }}</td>
+                    <td>{{ s.target_duration }}s</td>
+                    <td>{{ s.cell_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-dim);">No stories generated yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

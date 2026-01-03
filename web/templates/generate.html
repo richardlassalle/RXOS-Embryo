@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Story - Embryonic Story System{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Generate Story</h2>
+        <form method="post">
+            <div class="form-group">
+                <label for="duration">Duration (seconds)</label>
+                <input type="number" id="duration" name="duration" value="30" min="10" max="600" required>
+            </div>
+            <div class="form-group">
+                <label for="subject">Subject / Theme</label>
+                <input type="text" id="subject" name="subject" placeholder="e.g., car commercial, short film">
+            </div>
+            <button type="submit">Generate Cells</button>
+        </form>
+
+        {% if status %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <h3 style="font-size: 12px; color: var(--text-dim); margin-bottom: 10px;">CURRENT PARAMETERS</h3>
+            <div class="param-row">
+                <span class="arc-setup">Setup</span>
+                <span>{{ "%.2f"|format(status.learned_parameters.setup.intensity) }} / {{ "%.2f"|format(status.learned_parameters.setup.temperature) }}</span>
+            </div>
+            <div class="param-row">
+                <span class="arc-conflict">Conflict</span>
+                <span>{{ "%.2f"|format(status.learned_parameters.conflict.intensity) }} / {{ "%.2f"|format(status.learned_parameters.conflict.temperature) }}</span>
+            </div>
+            <div class="param-row">
+                <span class="arc-resolution">Resolution</span>
+                <span>{{ "%.2f"|format(status.learned_parameters.resolution.intensity) }} / {{ "%.2f"|format(status.learned_parameters.resolution.temperature) }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Asset Library</h2>
+        {% if assets %}
+        <div style="max-height: 300px; overflow-y: auto;">
+            <h3 style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">CHARACTERS</h3>
+            {% for a in assets if a.asset_type == 'character' %}
+            <div style="padding: 5px 0; font-size: 13px;">
+                <span style="color: var(--accent);">{{ a.id }}</span> - {{ a.name }}
+            </div>
+            {% endfor %}
+
+            <h3 style="font-size: 11px; color: var(--text-dim); margin-top: 15px;">LOCATIONS</h3>
+            {% for a in assets if a.asset_type == 'location' %}
+            <div style="padding: 5px 0; font-size: 13px;">
+                <span style="color: var(--accent);">{{ a.id }}</span> - {{ a.name }}
+            </div>
+            {% endfor %}
+
+            <h3 style="font-size: 11px; color: var(--text-dim); margin-top: 15px;">OBJECTS</h3>
+            {% for a in assets if a.asset_type == 'object' %}
+            <div style="padding: 5px 0; font-size: 13px;">
+                <span style="color: var(--accent);">{{ a.id }}</span> - {{ a.name }}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-dim);">No assets loaded.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if story %}
+<div class="card">
+    <h2>Generated Story Structure</h2>
+    <div class="status-grid" style="margin-bottom: 20px;">
+        <div class="status-item">
+            <div class="label">Duration</div>
+            <div class="value">{{ story.target_duration }}s</div>
+        </div>
+        <div class="status-item">
+            <div class="label">Cells</div>
+            <div class="value">{{ story.cell_count }}</div>
+        </div>
+        <div class="status-item">
+            <div class="label">Generation</div>
+            <div class="value">{{ story.generation }}</div>
+        </div>
+    </div>
+
+    {% if story.subject %}
+    <p style="margin-bottom: 15px; color: var(--text-dim);">Subject: <strong style="color: var(--text);">{{ story.subject }}</strong></p>
+    {% endif %}
+
+    <div class="cells-grid">
+        {% for cell in cells %}
+        <div class="cell {{ cell.arc }}">
+            <div class="cell-header">
+                <span class="arc-badge {{ cell.arc }}">{{ cell.arc }}</span>
+                <span class="cell-id">{{ cell.id[:12] }}</span>
+            </div>
+            <div class="cell-stats">
+                <span>Duration: <strong>{{ "%.1f"|format(cell.duration) }}s</strong></span>
+                <span>Intensity: <strong>{{ "%.2f"|format(cell.parameters.intensity) }}</strong></span>
+                <span>Temperature: <strong>{{ "%.2f"|format(cell.parameters.temperature) }}</strong></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="{{ url_for('feedback') }}">
+            <button>Provide Feedback</button>
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

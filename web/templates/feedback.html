@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback - Embryonic Story System{% endblock %}
+
+{% block content %}
+{% if result %}
+<div class="message success">
+    <strong>Evolution Complete!</strong>
+    Generation {{ result.old_generation }} evolved to Generation {{ result.new_generation }}.
+    Overall score: {{ "%.1f"|format(result.overall_score * 100) }}%
+</div>
+{% endif %}
+
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Rate Last Story</h2>
+        {% if last_story %}
+        <p style="margin-bottom: 20px; color: var(--text-dim);">
+            Provide feedback on: <strong style="color: var(--text);">{{ last_story.subject or 'Untitled' }}</strong>
+            ({{ last_story.target_duration }}s, {{ last_story.cell_count }} cells)
+        </p>
+
+        <form method="post" id="feedbackForm">
+            <div class="form-group">
+                <label for="engagement">Engagement</label>
+                <input type="range" id="engagement" name="engagement" min="0" max="1" step="0.05" value="0.75">
+                <div class="range-value" id="engagementValue">75%</div>
+            </div>
+
+            <div class="form-group">
+                <label for="coherence">Narrative Coherence</label>
+                <input type="range" id="coherence" name="coherence" min="0" max="1" step="0.05" value="0.75">
+                <div class="range-value" id="coherenceValue">75%</div>
+            </div>
+
+            <div class="form-group">
+                <label for="quality">Visual Quality</label>
+                <input type="range" id="quality" name="quality" min="0" max="1" step="0.05" value="0.75">
+                <div class="range-value" id="qualityValue">75%</div>
+            </div>
+
+            <div class="form-group">
+                <label for="timing">Timing Effectiveness</label>
+                <input type="range" id="timing" name="timing" min="0" max="1" step="0.05" value="0.75">
+                <div class="range-value" id="timingValue">75%</div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-dim);">Weighted Overall:</span>
+                    <span id="overallScore" style="font-size: 24px; font-weight: 600; color: var(--success);">75%</span>
+                </div>
+            </div>
+
+            <button type="submit" style="margin-top: 20px; width: 100%;">Submit Feedback & Evolve</button>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <h3>No Story to Rate</h3>
+            <p>Generate a story first, then come back to provide feedback.</p>
+            <a href="{{ url_for('generate') }}" style="margin-top: 15px; display: inline-block;">
+                <button class="secondary">Generate Story</button>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>How Feedback Works</h2>
+        <div style="color: var(--text-dim); line-height: 1.8;">
+            <p style="margin-bottom: 15px;">
+                Your feedback teaches the system what works. High scores reinforce current parameters,
+                while low scores trigger adaptation.
+            </p>
+
+            <h3 style="font-size: 12px; color: var(--text); margin: 15px 0 10px;">METRICS</h3>
+            <ul style="list-style: none;">
+                <li style="padding: 5px 0;"><strong>Engagement (30%)</strong> - How compelling is the content?</li>
+                <li style="padding: 5px 0;"><strong>Coherence (30%)</strong> - Does the narrative flow well?</li>
+                <li style="padding: 5px 0;"><strong>Quality (20%)</strong> - Production/visual quality</li>
+                <li style="padding: 5px 0;"><strong>Timing (20%)</strong> - Is the pacing effective?</li>
+            </ul>
+
+            <h3 style="font-size: 12px; color: var(--text); margin: 15px 0 10px;">EVOLUTION</h3>
+            <p>
+                Scores above 70% expand the "successful range" for parameters used.
+                The system adapts gradually, moving toward what works while avoiding what doesn't.
+            </p>
+        </div>
+
+        {% if status %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <h3 style="font-size: 12px; color: var(--text-dim); margin-bottom: 10px;">CURRENT GENERATION</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="label">Gen</div>
+                    <div class="value">{{ status.embryo.generation }}</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">History</div>
+                    <div class="value">{{ status.generation_history_count }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if last_story and last_story.cells %}
+<div class="card">
+    <h2>Story Cells</h2>
+    <div class="cells-grid">
+        {% for cell in last_story.cells %}
+        <div class="cell {{ cell.arc }}">
+            <div class="cell-header">
+                <span class="arc-badge {{ cell.arc }}">{{ cell.arc }}</span>
+                <span class="cell-id">{{ cell.id[:12] }}</span>
+            </div>
+            <div class="cell-stats">
+                <span>Duration: <strong>{{ "%.1f"|format(cell.duration) }}s</strong></span>
+                <span>Intensity: <strong>{{ "%.2f"|format(cell.parameters.intensity) }}</strong></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateValue(id) {
+        const slider = document.getElementById(id);
+        const display = document.getElementById(id + 'Value');
+        display.textContent = Math.round(slider.value * 100) + '%';
+        updateOverall();
+    }
+
+    function updateOverall() {
+        const engagement = parseFloat(document.getElementById('engagement').value);
+        const coherence = parseFloat(document.getElementById('coherence').value);
+        const quality = parseFloat(document.getElementById('quality').value);
+        const timing = parseFloat(document.getElementById('timing').value);
+
+        const overall = engagement * 0.3 + coherence * 0.3 + quality * 0.2 + timing * 0.2;
+        document.getElementById('overallScore').textContent = Math.round(overall * 100) + '%';
+
+        // Color based on score
+        const scoreEl = document.getElementById('overallScore');
+        if (overall >= 0.8) {
+            scoreEl.style.color = '#4ade80';
+        } else if (overall >= 0.6) {
+            scoreEl.style.color = '#fbbf24';
+        } else {
+            scoreEl.style.color = '#f87171';
+        }
+    }
+
+    ['engagement', 'coherence', 'quality', 'timing'].forEach(id => {
+        const slider = document.getElementById(id);
+        if (slider) {
+            slider.addEventListener('input', () => updateValue(id));
+            updateValue(id);
+        }
+    });
+</script>
+{% endblock %}
